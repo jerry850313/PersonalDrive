@@ -1,18 +1,623 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文件管理</title>
+
+    <title>個人雲端</title>
+
     <link rel="stylesheet" href="styles.css">
+
 </head>
+
 <body>
-    <h1>文件管理</h1>
-    <input type="file" id="fileInput">
-    <button onclick="uploadFile()">上傳</button>
-    <button id="createFolderBtn">📁 新增資料夾</button>
-    <h2>文件列表</h2>
-    <ul id="fileList"></ul>
-    <script src="script.js"></script>
-</body>
+
+    <div class="header">
+
+                <div class="header-left">
+
+                    <h1 data-i18n-key="title">個人雲端</h1>
+
+                    <div class="dropdown">
+
+                        <button id="actionsDropdownBtn">+</button>
+
+                        <div class="dropdown-content" id="actionsDropdownContent">
+
+                                            <a href="#" id="dropdownSelectFiles" data-i18n-key="selectFiles">選擇檔案</a>
+
+                                            <a href="#" id="dropdownCreateFolder" data-i18n-key="newFolder">新增資料夾</a>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Admin: User View Selector -->
+
+                    <div id="adminUserView" class="admin-feature" style="display: none;">
+
+                        <label for="user-view-select" data-i18n-key="userViewLabel">檢視使用者:</label>
+
+                        <select id="user-view-select"></select>
+
+                    </div>
+
+                </div>
+
+                <div class="user-info">
+
+                                        <span id="username-display"></span>
+
+                    
+
+                                        <button id="userGuideBtn" data-i18n-key="userGuide">使用指南</button>
+
+                    
+
+                                        <button id="adminPanelBtn" class="admin-feature" style="display: none;" data-i18n-key="adminPanel">管理面板</button>
+
+                    
+
+                                        <button id="settingsBtn">⚙️</button>
+
+                    
+
+                                        <button onclick="logout()" data-i18n-key="logout">登出</button>
+
+                    
+
+                                    </div>
+
+                    
+
+                                </div>
+
+                    
+
+                            
+
+                    
+
+                                <div class="breadcrumb" id="breadcrumb"></div>
+
+                    
+
+                                
+
+                    
+
+                                    <h2 data-i18n-key="fileListTitle">文件列表</h2>
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                        <!-- Progress Bar -->
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                        <div id="progressBarContainer" style="display: none;">
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                            <div id="progressBar"></div>
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                        </div>
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                
+
+                    
+
+                                    <ul id="fileList"></ul>
+
+                    
+
+                            
+
+                    
+
+                                <!-- Context Menu -->
+
+                    
+
+                                <div id="contextMenu" class="context-menu" style="display: none;">
+
+                    
+
+                                    <ul>
+
+                    
+
+                                        <li id="context-rename" data-i18n-key="ctxRename">✏️ 重新命名</li>
+
+                    
+
+                                        <li id="context-delete" data-i18n-key="ctxDelete">🗑️ 刪除</li>
+
+                    
+
+                                        <li id="context-download" data-i18n-key="ctxDownload">⬇️ 下載</li>
+
+                    
+
+                                        <li id="context-move" data-i18n-key="ctxMove">➡️ 移動</li>
+
+                    
+
+                                        <li id="context-share" data-i18n-key="ctxShare">🔗 分享</li>
+
+                    
+
+                                    </ul>
+
+                    
+
+                                </div>
+
+                    
+
+                            
+
+                    
+
+                                <!-- Preview Container -->
+
+                    
+
+                                <div id="previewContainer" style="display: none;">
+
+                    
+
+                                    <div class="preview-box">
+
+                    
+
+                                      <button onclick="closePreview()" class="close-preview" data-i18n-key="close">關閉</button>
+
+                    
+
+                                      <div id="previewContent"></div>
+
+                    
+
+                                    </div>
+
+                    
+
+                                </div>
+
+                    
+
+                            
+
+                    
+
+                                <!-- Settings Modal -->
+
+                    
+
+                                <div id="settingsModal" class="modal" style="display: none;">
+
+                    
+
+                                    <div class="modal-content">
+
+                    
+
+                                        <div class="modal-header">
+
+                    
+
+                                            <h2 data-i18n-key="settingsTitle">設定</h2>
+
+                    
+
+                                            <button id="closeSettingsBtn" class="close-preview">&times;</button>
+
+                    
+
+                                        </div>
+
+                    
+
+                                        <div class="modal-body">
+
+                    
+
+                                            <div class="setting-item">
+
+                    
+
+                                                <label for="theme-select" data-i18n-key="themeLabel">主題</label>
+
+                    
+
+                                                <select id="theme-select">
+
+                    
+
+                                                    <option value="system" data-i18n-key="themeSystem">跟隨系統</option>
+
+                    
+
+                                                    <option value="light" data-i18n-key="themeLight">亮色</option>
+
+                    
+
+                                                    <option value="dark" data-i18n-key="themeDark">暗色</option>
+
+                    
+
+                                                </select>
+
+                    
+
+                                            </div>
+
+                    
+
+                                            <div class="setting-item">
+
+                    
+
+                                                <label for="bg-url-input" data-i18n-key="bgLabel">背景圖片 URL</label>
+
+                    
+
+                                                <input type="text" id="bg-url-input" placeholder="請輸入圖片網址">
+
+                    
+
+                                                <button id="applyBgBtn" data-i18n-key="apply">套用</button>
+
+                    
+
+                                                <button id="clearBgBtn" data-i18n-key="clear">清除</button>
+
+                    
+
+                                            </div>
+
+                    
+
+                                            <div class="setting-item">
+
+                    
+
+                                                <label for="lang-select" data-i18n-key="langLabel">語言</label>
+
+                    
+
+                                                <select id="lang-select">
+
+                    
+
+                                                    <option value="zh-TW">繁體中文</option>
+
+                    
+
+                                                    <option value="en">English</option>
+
+                    
+
+                                                </select>
+
+                    
+
+                                            </div>
+
+                    
+
+                                        </div>
+
+                    
+
+                                    </div>
+
+                    
+
+                                </div>
+
+                    
+
+                            
+
+                    
+
+                                <!-- Admin Panel Modal -->
+
+                    
+
+                                <div id="adminPanelModal" class="modal admin-feature" style="display: none;">
+
+                    
+
+                                    <div class="modal-content">
+
+                    
+
+                                        <div class="modal-header">
+
+                    
+
+                                            <h2 data-i18n-key="adminPanel">管理面板</h2>
+
+                    
+
+                                            <button id="closeAdminPanelBtn" class="close-preview">&times;</button>
+
+                    
+
+                                        </div>
+
+                    
+
+                                                    <div class="modal-body">
+
+                    
+
+                                                        <div id="admin-create-user-form">
+
+                    
+
+                                                            <h4 data-i18n-key="createUser">建立新使用者</h4>
+
+                    
+
+                                                            <form id="create-user-form">
+
+                    
+
+                                                                <input type="text" id="create-username" placeholder="新使用者名稱" required>
+
+                    
+
+                                                                <input type="password" id="create-password" placeholder="新密碼" required>
+
+                    
+
+                                                                <select id="create-role">
+
+                    
+
+                                                                    <option value="user" data-i18n-key="roleUser">一般用戶</option>
+
+                    
+
+                                                                    <option value="admin" data-i18n-key="roleAdmin">管理員</option>
+
+                    
+
+                                                                </select>
+
+                    
+
+                                                                <button type="submit" data-i18n-key="create">建立</button>
+
+                    
+
+                                                            </form>
+
+                    
+
+                                                            <div id="create-user-message"></div>
+
+                    
+
+                                                        </div>
+
+                    
+
+                                                        <hr>
+
+                    
+
+                                                        <h3>使用者管理</h3>
+
+                    
+
+                                                        <table id="user-management-table">
+
+                    
+
+                                                <thead>
+
+                    
+
+                                                    <tr>
+
+                    
+
+                                                        <th data-i18n-key="username">使用者名稱</th>
+
+                    
+
+                                                        <th data-i18n-key="role">角色</th>
+
+                    
+
+                                                        <th data-i18n-key="actions">動作</th>
+
+                    
+
+                                                    </tr>
+
+                    
+
+                                                </thead>
+
+                    
+
+                                                <tbody>
+
+                    
+
+                                                    <!-- User rows will be inserted here by script.js -->
+
+                    
+
+                                                </tbody>
+
+                    
+
+                                            </table>
+
+                    
+
+                                        </div>
+
+                    
+
+                                    </div>
+
+                    
+
+                                </div>
+
+                    
+
+                            
+
+                    
+
+                                <!-- User Guide Modal -->
+
+                    
+
+                                <div id="userGuideModal" class="modal" style="display: none;">
+
+                    
+
+                                    <div class="modal-content">
+
+                    
+
+                                        <div class="modal-header">
+
+                    
+
+                                            <h2 data-i18n-key="userGuide">使用指南</h2>
+
+                    
+
+                                            <button id="closeUserGuideBtn" class="close-preview">&times;</button>
+
+                    
+
+                                        </div>
+
+                    
+
+                                        <div class="modal-body" id="userGuideContent">
+
+                    
+
+                                            <!-- Markdown content will be rendered here -->
+
+                    
+
+                                        </div>
+
+                    
+
+                                    </div>
+
+                    
+
+                                </div>
+
+                    
+
+                            
+
+                    
+
+                                <!-- Hidden file input -->
+
+                    
+
+                                <input type="file" id="fileInput" multiple style="display: none;">
+
+                    
+
+                    
+
+                    
+
+                                <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+                    
+
+                            <script src="script.js"></script>
+
+                    
+
+                    
+
+                    
+
+                        </body>
+
 </html>

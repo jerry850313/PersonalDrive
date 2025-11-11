@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入 - 個人雲端</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="container">
+        <div id="login-form" class="form-container">
+            <h2>登入</h2>
+            <form onsubmit="login(event)">
+                <input type="text" id="login-username" placeholder="使用者名稱" required>
+                <input type="password" id="login-password" placeholder="密碼" required>
+                <button type="submit">登入</button>
+            </form>
+            <p>沒有帳號？ <a href="#" onclick="toggleForms()">立即註冊</a></p>
+        </div>
+
+        <div id="register-form" class="form-container" style="display: none;">
+            <h2>註冊</h2>
+            <form onsubmit="register(event)">
+                <input type="text" id="register-username" placeholder="使用者名稱" required>
+                <input type="password" id="register-password" placeholder="密碼" required>
+                <button type="submit">註冊</button>
+            </form>
+            <p>已經有帳號？ <a href="#" onclick="toggleForms()">返回登入</a></p>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        function toggleForms() {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const message = document.getElementById('message');
+            message.textContent = '';
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+        }
+
+        async function register(event) {
+            event.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const message = document.getElementById('message');
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    message.textContent = '✅ 註冊成功！請返回登入。';
+                    message.style.color = 'green';
+                    toggleForms();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                message.textContent = `❌ 註冊失敗: ${error.message}`;
+                message.style.color = 'red';
+            }
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const message = document.getElementById('message');
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('role', result.role); // Save user role
+                    window.location.href = '/index.html';
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                message.textContent = `❌ 登入失敗: ${error.message}`;
+                message.style.color = 'red';
+            }
+        }
+
+        // 如果已經登入，直接跳轉
+        if (localStorage.getItem('token')) {
+            window.location.href = '/index.html';
+        }
+    </script>
+</body>
+</html>

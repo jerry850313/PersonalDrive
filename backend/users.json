@@ -1,0 +1,12 @@
+[
+  {
+    "username": "jerry850313",
+    "password": "$2b$10$PK1mI6kapPu.TF7eLZNbW.Yxrh98g3ljeUfO9Q8uHZLnZak7EQ4pK",
+    "role": "admin"
+  },
+  {
+    "username": "wind1891",
+    "password": "$2b$10$KyeT6rmRAUH3SWguXVblS.QWCDkurSlHeGq9xEx.ktWiibLl/NONq",
+    "role": "user"
+  }
+]
